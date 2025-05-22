@@ -41,6 +41,17 @@ async def read_category_by_query(category: str):
 	return books_to_return
 
 
+# The order of arrangement is important
+# Smaller endpoints should be at the beginning
+@app.get('/books/byauthor/')
+async def read_books_by_author(author: str):
+	book_to_return = []
+	for book in books:
+		if book.get('author').casefold() == author.casefold():
+			book_to_return.append(book)
+	return book_to_return
+
+
 @app.get('/books/{book_author}')
 async def read_author_category_by_query(book_author: str, category: str):
 	books_to_return = []
@@ -56,3 +67,18 @@ async def read_author_category_by_query(book_author: str, category: str):
 @app.post('/books/create_book')
 async def create_book(new_book=Body()):
 	books.append(new_book)
+
+
+@app.put('/books/update_book')
+async def update_book(updated_book=Body()):
+	for i in range(len(books)):
+		if books[i].get('title').casefold() == updated_book.get('title').casefold():
+			books[i] = updated_book
+
+
+@app.delete('/books/delete_book/{book_title}')
+async def delete_book(book_title):
+	for i in range(len(books)):
+		if books[i].get('title').casefold() == book_title.casefold():
+			books.pop(i)
+			break
