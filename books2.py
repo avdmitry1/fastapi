@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Path, Query
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -12,6 +12,7 @@ class Book:
 	author: str
 	description: str
 	rating: int
+	published_date: int
 
 	def __init__(self, id, title, author, description, rating, published_date):
 		self.id = id
@@ -75,13 +76,15 @@ def book_add(book: Book):
 
 
 @app.get("/books/{book_id}")
-async def get_book_by_id(book_id: int):
-	book_to_return = [book for book in BOOKS if book.id == book_id]
-	return book_to_return
+async def get_book_by_id(book_id: int = Path(gt=0, lt=15)):
+	for book in BOOKS:
+		if book.id == book_id:
+			return book
+	return {"error": "Book not found"}
 
 
 @app.get("/books-filter-rating")
-async def get_book_by_rating(books_rating: int):
+async def get_book_by_rating(books_rating: int = Query(gt=0, lt=15)):
 	books_to_return = [book for book in BOOKS if book.id >= books_rating]
 	return books_to_return
 
@@ -94,7 +97,7 @@ async def books_update(book: BookRequest):
 
 
 @app.delete("/books/{book_id}")
-async def book_delete(book_id: int):
+async def book_delete(book_id: int = Path(gt=0, lt=15)):
 	for i in range(len(BOOKS)):
 		if BOOKS[i].id == book_id:
 			BOOKS.pop(i)
@@ -103,9 +106,7 @@ async def book_delete(book_id: int):
 
 @app.get("/books_by_published_date")
 async def book_published_date(published_date: int):
-	books_to_return = [
-		book for book in BOOKS if book.published_date >= published_date
-	]
+	books_to_return = [book for book in BOOKS if book.published_date >= published_date]
 	return books_to_return
 
 
