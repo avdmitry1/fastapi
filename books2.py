@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
+import uvicorn
 
 app = FastAPI()
 
@@ -12,25 +13,26 @@ class Book:
 	description: str
 	rating: int
 
-	def __init__(self, id, title, author, description, rating):
+	def __init__(self, id, title, author, description, rating, published_date):
 		self.id = id
 		self.title = title
 		self.author = author
 		self.description = description
 		self.rating = rating
+		self.published_date = published_date
 
 
 BOOKS = [
-	Book(1, "Life of Pi", "Yann Martel", "A novel", 4),
-	Book(2, "Star Wars", "George Lucas", "A science fiction novel", 5),
-	Book(3, "Well, this is us", "Stephen Chbosky", "A biography", 3),
-	Book(4, "Last of Us", "Neil Druckmann", "An action novel", 4),
-	Book(5, "The Martian", "Andy Weir", "A science fiction novel", 4),
-	Book(6, "The Hunger Games", "Suzanne Collins", "A dystopian novel", 4),
-	Book(7, "The Da Vinci Code", "Dan Brown", "A thriller novel", 4),
-	Book(8, "The Girl with the Dragon Tattoo", "Stieg Larsson", "A thriller novel", 4),
-	Book(9, "The Da Vinci Code", "Dan Brown", "A thriller novel", 4),
-	Book(10, "The Girl with the Dragon Tattoo", "Stieg Larsson", "A thriller novel", 4),
+	Book(1, "Life of Pi", "Yann Martel", "A novel", 4, 2011),
+	Book(2, "Star Wars", "George Lucas", "A science fiction novel", 5, 2008),
+	Book(3, "Well, this is us", "Stephen Chbosky", "A biography", 3, 2005),
+	Book(4, "Last of Us", "Neil Druckmann", "An action novel", 4, 2020),
+	Book(5, "The Martian", "Andy Weir", "A science fiction novel", 6, 2021),
+	Book(6, "The Hunger Games", "Suzanne Collins", "A dystopian novel", 2, 2013),
+	Book(7, "The Da Vinci Code", "Dan Brown", "A thriller novel", 7, 2017),
+	Book(8, "The Girl with the Dragon Tattoo", "Stieg Larsson", "A thriller novel", 9, 2009),
+	Book(9, "The Da Vinci Code", "Dan Brown", "A thriller novel", 1, 2011),
+	Book(10, "The Girl with the Dragon Tattoo", "Stieg Larsson", "A thriller novel", 4, 2024),
 ]
 
 
@@ -45,6 +47,7 @@ class BookRequest(BaseModel):
 	author: str = Field(min_length=1)
 	description: str = Field(min_length=1, max_length=25)
 	rating: int = Field(gt=1, lt=10)
+	published_date: int = Field(gt=2000, lt=2025)
 
 	model_config = {
 		"json_schema_extra": {
@@ -53,6 +56,7 @@ class BookRequest(BaseModel):
 				"author": "new author",
 				"description": "tell about book",
 				"rating": 5,
+				"published_date": 2012,
 			}
 		}
 	}
@@ -72,7 +76,38 @@ def book_add(book: Book):
 
 @app.get("/books/{book_id}")
 async def get_book_by_id(book_id: int):
-	for book in BOOKS:
-		if book.id == book_id:
-			return book
-	return f"Book by id {book_id} didnt find"
+	book_to_return = [book for book in BOOKS if book.id == book_id]
+	return book_to_return
+
+
+@app.get("/books-filter-rating")
+async def get_book_by_rating(books_rating: int):
+	books_to_return = [book for book in BOOKS if book.id >= books_rating]
+	return books_to_return
+
+
+@app.put("/books-update")
+async def books_update(book: BookRequest):
+	for i in range(len(BOOKS)):
+		if BOOKS[i].id == book.id:
+			BOOKS[i] = book
+
+
+@app.delete("/books/{book_id}")
+async def book_delete(book_id: int):
+	for i in range(len(BOOKS)):
+		if BOOKS[i].id == book_id:
+			BOOKS.pop(i)
+			break
+
+
+@app.get("/books_by_published_date")
+async def book_published_date(published_date: int):
+	books_to_return = [
+		book for book in BOOKS if book.published_date >= published_date
+	]
+	return books_to_return
+
+
+if __name__ == "__main__":
+	uvicorn.run("books2:app", reload=True)
