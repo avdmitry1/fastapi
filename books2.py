@@ -1,7 +1,8 @@
 from typing import Optional
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, Path, Query, HTTPException
 from pydantic import BaseModel, Field
 import uvicorn
+from starlette import status
 
 app = FastAPI()
 
@@ -37,7 +38,7 @@ BOOKS = [
 ]
 
 
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK)
 async def read_all_books():
 	return BOOKS
 
@@ -63,7 +64,7 @@ class BookRequest(BaseModel):
 	}
 
 
-@app.post("/create-book")
+@app.post("/create-book", status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
 	new_book = Book(**book_request.model_dump())
 	BOOKS.append(book_add(new_book))
@@ -75,12 +76,12 @@ def book_add(book: Book):
 	return book
 
 
-@app.get("/books/{book_id}")
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
 async def get_book_by_id(book_id: int = Path(gt=0, lt=15)):
 	for book in BOOKS:
 		if book.id == book_id:
 			return book
-	return {"error": "Book not found"}
+	return HTTPException(status_code=404, detail="Item not found")
 
 
 @app.get("/books-filter-rating")
@@ -89,14 +90,18 @@ async def get_book_by_rating(books_rating: int = Query(gt=0, lt=15)):
 	return books_to_return
 
 
-@app.put("/books-update")
+@app.put("/books-update", status_code=status.HTTP_204_NO_CONTENT)
 async def books_update(book: BookRequest):
+	book_changed = False
 	for i in range(len(BOOKS)):
 		if BOOKS[i].id == book.id:
 			BOOKS[i] = book
+			book_changed = True
+	if not book_changed:
+		return HTTPException(status_code=404, detail="Book not found")
 
 
-@app.delete("/books/{book_id}")
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def book_delete(book_id: int = Path(gt=0, lt=15)):
 	for i in range(len(BOOKS)):
 		if BOOKS[i].id == book_id:
