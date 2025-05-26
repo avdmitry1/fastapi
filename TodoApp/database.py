@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 SQL_ALCHEMY_URL_DB = "sqlite:///./todos.db"
 
 
-engine = create_engine(SQL_ALCHEMY_URL_DB, connect_args={"check_same_tread": False})
+engine = create_engine(SQL_ALCHEMY_URL_DB, connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
