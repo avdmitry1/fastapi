@@ -1,6 +1,6 @@
 import pydantic
 from database import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 
 
 class Todos(Base):
@@ -8,4 +8,5 @@ class Todos(Base):
 	id = Column(Integer, primary_key=True, index=True)
 	title = Column(String)
 	desc = Column(String)
-	priority = False
+	priority = Column(Integer)
+	complete = Column(Boolean, default=False)
