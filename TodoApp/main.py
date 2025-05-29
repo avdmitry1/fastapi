@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 import uvicorn
-import models
+from models import Base
 from database import engine
+from routers import auth, todos
 
 app = FastAPI()
+app.include_router(auth)
+app.include_router(todos)
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 
 if __name__ == "__main__":
