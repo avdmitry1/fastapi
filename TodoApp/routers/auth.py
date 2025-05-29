@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router_auth = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("")
+@router_auth.post("")
 async def create_user():
 	return {"user": "auth"}

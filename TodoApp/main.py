@@ -5,8 +5,8 @@ from database import engine
 from routers import auth, todos
 
 app = FastAPI()
-app.include_router(auth)
-app.include_router(todos)
+app.include_router(auth.router_auth)
+app.include_router(todos.router_todos)
 
 Base.metadata.create_all(bind=engine)
 

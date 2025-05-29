@@ -6,7 +6,7 @@ from models import Todos
 from database import SessionLocal
 from sqlalchemy.orm import Session
 
-router = APIRouter(tags=["Todo"])
+router_todos = APIRouter(tags=["Todo"])
 
 
 def get_db():
@@ -27,12 +27,12 @@ class TodoRequest(BaseModel):
 	complete: bool
 
 
-@router.get("/")
+@router_todos.get("/")
 async def read_all(db: db_dependency):
 	return db.query(Todos).all()
 
 
-@router.get("/todos/{todo_id}", status_code=status.HTTP_200_OK)
+@router_todos.get("/todos/{todo_id}", status_code=status.HTTP_200_OK)
 async def read_todo_by_id(db: db_dependency, todo_id: int = Path(gt=0)):
 	todo = db.query(Todos).filter(Todos.id == todo_id).first()
 	if todo is None:
@@ -40,14 +40,14 @@ async def read_todo_by_id(db: db_dependency, todo_id: int = Path(gt=0)):
 	return todo
 
 
-@router.post("/todos", status_code=status.HTTP_201_CREATED)
+@router_todos.post("/todos", status_code=status.HTTP_201_CREATED)
 async def create_todo(db: db_dependency, todo_request: TodoRequest):
 	todo_model = Todos(**todo_request.model_dump())
 	db.add(todo_model)
 	db.commit()
 
 
-@router.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router_todos.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int = Path(gt=0)):
 	todo_model = db.query(Todos).filter(Todos.id == todo_id).filter()
 	if todo_model is None:
@@ -61,7 +61,7 @@ async def update_todo(db: db_dependency, todo_request: TodoRequest, todo_id: int
 	db.commit()
 
 
-@router.delete("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router_todos.delete("/todos/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
 	todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
 	if todo_model is None:
